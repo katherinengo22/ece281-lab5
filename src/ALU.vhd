@@ -21,6 +21,7 @@
 
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -41,7 +42,52 @@ end ALU;
 
 architecture Behavioral of ALU is
 
+    signal A, B, Answer : signed(7 downto 0);
+    signal check : signed(8 downto 0);
+    
 begin
+    
+    process(i_A, i_B, i_op)
+    begin
+        
+        A <= signed(i_A);
+        B <= signed(i_B);
+        Answer <= (others => '0');
+        check    <= (others => '0');
+        
+        case i_op is
+        
+        -- ADD
+            when "000" => 
+                check <= resize(signed(i_A),9) + resize(signed(i_B),9);
+                Answer <= check(7 downto 0);
+                    
+        -- SUBTRACT
+            when "001" => 
+                check <= resize(signed(i_A),9) - resize(signed(i_B),9);
+                Answer <= check(7 downto 0);                
 
+        -- AND
+            when "010" => 
+                Answer <= signed(i_A and i_B);
 
+        -- OR
+            when "011" => 
+                Answer <= signed(i_A or i_B);
+
+                
+        end case;
+    end process;
+    
+    o_result <= std_logic_vector(Answer);
+    
+    o_flags(3) <= Answer(7);
+    o_flags(2) <= '1' when Answer = 0 else '0';
+    o_flags(1) <= check(8) 
+                    when (i_op = "000" or i_op = "001") 
+                    else '0';
+    o_flags(0) <= (check(8) xor check(7)) 
+                    when (i_op = "000" or i_op = "001") 
+                    else '0';
+ 
 end Behavioral;
