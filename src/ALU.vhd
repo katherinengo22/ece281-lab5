@@ -60,12 +60,13 @@ begin
         -- ADD
             when "000" => 
                 check <= resize(signed(i_A),9) + resize(signed(i_B),9);
-                Answer <= check(7 downto 0);
+                Answer <= signed(i_A) + signed (i_B);
                     
         -- SUBTRACT
             when "001" => 
                 check <= resize(signed(i_A),9) - resize(signed(i_B),9);
-                Answer <= check(7 downto 0);                
+                Answer <= signed(i_A) - signed (i_B);
+                                 
 
         -- AND
             when "010" => 
@@ -75,6 +76,10 @@ begin
             when "011" => 
                 Answer <= signed(i_A or i_B);
 
+            when others =>
+                Answer <= (others => '0');
+                check <= (others => '0');
+
                 
         end case;
     end process;
@@ -83,9 +88,9 @@ begin
     
     o_flags(3) <= Answer(7);
     o_flags(2) <= '1' when Answer = 0 else '0';
-    o_flags(1) <= check(8) 
-                    when (i_op = "000" or i_op = "001") 
-                    else '0';
+    o_flags(1) <= check(8) when (i_op = "000") else
+                    not check(8) when( i_op = "001") else 
+                    '0';
     o_flags(0) <= (check(8) xor check(7)) 
                     when (i_op = "000" or i_op = "001") 
                     else '0';

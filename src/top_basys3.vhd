@@ -1,3 +1,5 @@
+
+
 --+----------------------------------------------------------------------------
 --|
 --| NAMING CONVENSIONS :
@@ -32,6 +34,7 @@ entity top_basys3 is
         sw      :   in std_logic_vector(7 downto 0); -- operands and opcode
         btnU    :   in std_logic; -- reset
         btnC    :   in std_logic; -- fsm cycle
+        btnL    :   in std_logic; -- clock divder reset 
         
         -- outputs
         led :   out std_logic_vector(15 downto 0);
@@ -57,7 +60,7 @@ architecture top_basys3_arch of top_basys3 is
             clk : in STD_LOGIC;
             reset : in STD_LOGIC;
             button : in STD_LOGIC;
-            action : out STD_LOGIC;
+            action : out STD_LOGIC
         );
     end component button_debounce;
     
@@ -144,7 +147,7 @@ begin
         generic map(k_DIV => 100000)
         port map (
             i_clk => clk,
-            i_reset => btnU,
+            i_reset => btnL,
             o_clk => w_clk
         );
         
@@ -185,12 +188,11 @@ begin
            o_flags => led (15 downto 12)
         );
         
-        
-       w_bin <= "00000000" when (w_cycle = "0001") else
+        w_bin <= "00000000" when (w_cycle = "0001") else
              w_A when (w_cycle = "0010") else
              w_B when (w_cycle = "0100") else
              w_answer when (w_cycle = "1000");
-       w_sign(3 downto 1) <= "000";
+        w_sign(3 downto 1) <= "000";
         
         twos_comp_1 : twos_comp 
         port map(
@@ -204,8 +206,8 @@ begin
         tdm : TDM4 
 	    generic map(k_WIDTH => 4)
         port map ( 
-           i_clk => btnU,
-           i_reset => w_clk,
+           i_clk => w_clk,
+           i_reset => btnU,
            i_D3 => w_sign,
 		   i_D2 => w_hund,
 		   i_D1 => w_tens,
@@ -221,6 +223,10 @@ begin
             i_Hex => w_data,
             o_seg_n => w_seg
         );
+        
+    seg <= "0111111" when (w_sign = "0001") and (w_sel = "0111") else
+        "1111111" when (w_sign = "0000") and (w_sel = "0111") else 
+        w_seg;
 
 	-- CONCURRENT STATEMENTS ----------------------------
 	led(11 downto 4) <= "00000000";

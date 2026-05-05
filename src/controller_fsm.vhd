@@ -59,7 +59,7 @@ begin
         
    state_register : process(i_clk)
         begin 
-            if rising_edge(I_clk) then 
+            if rising_edge(i_clk) then 
                 if i_reset = '1' then 
                     current_state <= clear;
                 elsif i_adv = '1' then 
